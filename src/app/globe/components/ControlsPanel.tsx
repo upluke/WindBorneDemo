@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import useSWR from 'swr';
 import type { BalloonPoint } from '@/lib/types';
 
@@ -63,7 +64,17 @@ export default function ControlsPanel({
     return directions[index];
   };
   return (
-    <div className="flex flex-col h-full p-6 text-white">
+    <div className="flex flex-col h-full text-white overflow-hidden">
+      <div className="flex-1 overflow-y-auto p-6">
+        {/* Back to Home Button */}
+        <Link 
+          href="/"
+          className="mb-6 flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors group"
+        >
+          <span className="group-hover:-translate-x-1 transition-transform">←</span>
+          <span>Back to Home</span>
+        </Link>
+
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white mb-2">
@@ -219,11 +230,20 @@ export default function ControlsPanel({
           </div>
           
           <div className="pt-3 border-t border-zinc-800">
+            <span className="font-medium text-zinc-300">Visual Guide:</span>
+            <ul className="mt-1 space-y-1 ml-2">
+              <li>• <span className="text-green-400 font-bold">Neon green trails</span> show balloon flight paths</li>
+              <li>• Trails update as you scrub through time</li>
+            </ul>
+          </div>
+          
+          <div className="pt-3 border-t border-zinc-800">
             <p className="text-zinc-500">
               Data updates every 60s
             </p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

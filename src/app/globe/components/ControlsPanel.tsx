@@ -12,6 +12,8 @@ interface ControlsPanelProps {
   balloonCount: number;
   selectedBalloon: BalloonPoint | null;
   onClearSelection: () => void;
+  isPlaying: boolean;
+  onTogglePlayPause: () => void;
 }
 
 interface WeatherData {
@@ -37,6 +39,8 @@ export default function ControlsPanel({
   balloonCount,
   selectedBalloon,
   onClearSelection,
+  isPlaying,
+  onTogglePlayPause,
 }: ControlsPanelProps) {
   // Fetch weather data when a balloon is selected
   const weatherUrl = selectedBalloon 
@@ -115,16 +119,17 @@ export default function ControlsPanel({
         </div>
       </div>
 
-      {/* Play/Pause Button (Placeholder) */}
+      {/* Play/Pause Button */}
       <div className="mb-6">
         <button
+          onClick={onTogglePlayPause}
+          disabled={isLoading || error}
           className="w-full py-3 px-4 bg-zinc-800 hover:bg-zinc-700 disabled:bg-zinc-800 disabled:opacity-50 rounded-lg text-sm font-medium transition-colors border border-zinc-700 disabled:cursor-not-allowed"
-          disabled={true}
         >
-          ⏸ Pause Animation
+          {isPlaying ? '⏸ Pause' : '▶ Play'} Animation
         </button>
         <p className="text-xs text-zinc-500 mt-2 text-center">
-          (Animation coming in M3)
+          {isPlaying ? 'Playing from past to present' : 'Click to animate from 24h ago to now'}
         </p>
       </div>
 

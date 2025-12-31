@@ -9,12 +9,16 @@ import BalloonPointsLayer from './components/BalloonPointsLayer';
 import TrailsLayer from './components/TrailsLayer';
 import ControlsPanel from './components/ControlsPanel';
 import { matchTracks } from '@/lib/windborne/trackMatching';
+import { usePlayback } from './hooks/usePlayback';
 import type { BalloonsApiResponse, BalloonPoint } from '@/lib/types';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function GlobeScene() {
-  const [selectedHour, setSelectedHour] = useState(0);
+  const { selectedHour, isPlaying, setSelectedHour, togglePlayPause } = usePlayback({
+    maxHours: 24,
+    intervalMs: 800,
+  });
   const [selectedBalloon, setSelectedBalloon] = useState<BalloonPoint | null>(null);
   
   const { data, error, isLoading } = useSWR<BalloonsApiResponse>(
@@ -54,6 +58,8 @@ export default function GlobeScene() {
           balloonCount={currentBalloons.length}
           selectedBalloon={selectedBalloon}
           onClearSelection={() => setSelectedBalloon(null)}
+          isPlaying={isPlaying}
+          onTogglePlayPause={togglePlayPause}
         />
       </div>
 

@@ -37,3 +37,19 @@ export interface BalloonsApiResponse {
   error?: string;
 }
 
+/**
+ * A point in a balloon track with time information
+ */
+export interface TrackPoint {
+  tHoursAgo: number;
+  point: BalloonPoint;
+}
+
+/**
+ * A tracked balloon trajectory over time
+ */
+export interface Track {
+  id: string;
+  points: TrackPoint[];
+}
+

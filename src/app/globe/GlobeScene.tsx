@@ -2,11 +2,13 @@
 
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stars } from '@react-three/drei';
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useMemo } from 'react';
 import useSWR from 'swr';
 import EarthSphere from './components/EarthSphere';
 import BalloonPointsLayer from './components/BalloonPointsLayer';
+import TrailsLayer from './components/TrailsLayer';
 import ControlsPanel from './components/ControlsPanel';
+import { matchTracks } from '@/lib/windborne/trackMatching';
 import type { BalloonsApiResponse, BalloonPoint } from '@/lib/types';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -27,13 +29,11 @@ export default function GlobeScene() {
   const currentBalloons: BalloonPoint[] = data?.snapshots
     .find((snap) => snap.tHoursAgo === selectedHour)?.balloons || [];
 
-  // Debug logging
-  if (data && !isLoading) {
-    console.log('Total snapshots:', data.snapshots.length);
-    console.log('Selected hour:', selectedHour);
-    console.log('Current balloons:', currentBalloons.length);
-    console.log('Available hours:', data.snapshots.map(s => s.tHoursAgo));
-  }
+  // Compute tracks from all snapshots
+  const tracks = useMemo(() => {
+    if (!data?.snapshots || data.snapshots.length === 0) return [];
+    return matchTracks(data.snapshots);
+  }, [data?.snapshots]);
 
   return (
     <div className="flex h-full w-full">
@@ -65,6 +65,7 @@ export default function GlobeScene() {
           <Suspense fallback={null}>
             <Stars radius={100} depth={50} count={5000} factor={4} fade speed={1} />
             <EarthSphere />
+            <TrailsLayer tracks={tracks} selectedHour={selectedHour} maxHours={24} />
             <BalloonPointsLayer points={currentBalloons} />
           </Suspense>
           

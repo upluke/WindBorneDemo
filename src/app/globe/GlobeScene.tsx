@@ -66,14 +66,14 @@ export default function GlobeScene() {
       {/* Main Canvas */}
       <div className="flex-1 relative">
         <Canvas
-          camera={{ position: [0, 0, 2.5], fov: 50 }}
+          camera={{ position: [0, 0, 3.8], fov: 45 }}
           gl={{ antialias: true }}
         >
           <color attach="background" args={['#000000']} />
           
           {/* Lighting */}
-          <ambientLight intensity={0.3} />
-          <directionalLight position={[5, 3, 5]} intensity={1} />
+          <ambientLight intensity={0.5} />
+          <directionalLight position={[5, 3, 5]} intensity={1.2} />
           
           {/* Scene Elements */}
           <Suspense fallback={null}>
@@ -91,9 +91,10 @@ export default function GlobeScene() {
           {/* Controls */}
           <OrbitControls
             enablePan={false}
-            minDistance={1.5}
-            maxDistance={5}
-            zoomSpeed={0.5}
+            minDistance={2.0}
+            maxDistance={6}
+            zoomSpeed={0.6}
+            target={[0, 0, 0]}
           />
         </Canvas>
 

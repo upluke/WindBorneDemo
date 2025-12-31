@@ -79,7 +79,12 @@ export default function GlobeScene() {
           <Suspense fallback={null}>
             <Stars radius={100} depth={50} count={5000} factor={4} fade speed={1} />
             <EarthSphere />
-            <TrailsLayer tracks={tracks} selectedHour={selectedHour} maxHours={24} />
+            <TrailsLayer 
+              tracks={tracks} 
+              selectedHour={selectedHour} 
+              maxHours={24}
+              maxTrails={500} 
+            />
             <BalloonPointsLayer points={currentBalloons} onSelectBalloon={setSelectedBalloon} />
           </Suspense>
           

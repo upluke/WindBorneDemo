@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import { InstancedMesh, Matrix4, Vector3 } from 'three';
@@ -19,6 +19,17 @@ export default function BalloonPointsLayer({ points, onSelectBalloon }: BalloonP
   const [hoveredPosition, setHoveredPosition] = useState<Vector3 | null>(null);
   
   const { camera, gl, raycaster, pointer } = useThree();
+
+  // Performance: Memoize tooltip content to prevent unnecessary re-renders
+  // Only recompute when hovered point changes, not on every frame
+  const tooltipContent = useMemo(() => {
+    if (!hoveredPoint) return null;
+    return {
+      lat: hoveredPoint.lat.toFixed(2),
+      lon: hoveredPoint.lon.toFixed(2),
+      alt: hoveredPoint.altKm.toFixed(1),
+    };
+  }, [hoveredPoint]);
 
   // Update instance matrices when points change
   useEffect(() => {
@@ -79,6 +90,8 @@ export default function BalloonPointsLayer({ points, onSelectBalloon }: BalloonP
 
   return (
     <>
+      {/* Performance: Using InstancedMesh for efficient rendering of 1000+ balloons
+          Each balloon is rendered as a single draw call with GPU instancing */}
       <instancedMesh ref={meshRef} args={[undefined, undefined, points.length]}>
         <sphereGeometry args={[0.015, 16, 16]} />
         <meshStandardMaterial
@@ -90,8 +103,8 @@ export default function BalloonPointsLayer({ points, onSelectBalloon }: BalloonP
         />
       </instancedMesh>
 
-      {/* Hover Tooltip */}
-      {hoveredPoint && hoveredPosition && (
+      {/* Hover Tooltip - Performance: Using memoized content */}
+      {tooltipContent && hoveredPosition && (
         <Html
           position={hoveredPosition}
           center
@@ -100,9 +113,9 @@ export default function BalloonPointsLayer({ points, onSelectBalloon }: BalloonP
         >
           <div className="bg-zinc-900/95 border border-zinc-700 rounded-lg px-3 py-2 shadow-xl text-xs text-white whitespace-nowrap backdrop-blur-sm">
             <div className="font-mono space-y-0.5">
-              <div>Lat: {hoveredPoint.lat.toFixed(2)}°</div>
-              <div>Lon: {hoveredPoint.lon.toFixed(2)}°</div>
-              <div>Alt: {hoveredPoint.altKm.toFixed(1)} km</div>
+              <div>Lat: {tooltipContent.lat}°</div>
+              <div>Lon: {tooltipContent.lon}°</div>
+              <div>Alt: {tooltipContent.alt} km</div>
             </div>
           </div>
         </Html>

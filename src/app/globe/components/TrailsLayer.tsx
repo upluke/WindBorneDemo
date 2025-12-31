@@ -9,6 +9,7 @@ interface TrailsLayerProps {
   tracks: Track[];
   selectedHour: number;
   maxHours?: number;
+  maxTrails?: number; // Performance: Cap number of trails rendered
 }
 
 /**
@@ -17,20 +18,30 @@ interface TrailsLayerProps {
  * @param tracks - Array of balloon tracks from matchTracks
  * @param selectedHour - Currently selected time (0 = now, 23 = 23h ago)
  * @param maxHours - Maximum hours to display (default 24)
+ * @param maxTrails - Maximum trails to render for performance (default 500)
  * 
  * @remarks
  * - Only renders trail segments up to selectedHour
  * - Trails are visible with bright cyan color and moderate opacity
  * - Shows best-effort motion history for balloon constellation
+ * - Performance: Caps trail count and decimates if needed to prevent stutter
  */
 export default function TrailsLayer({ 
   tracks, 
   selectedHour,
-  maxHours = 24 
+  maxHours = 24,
+  maxTrails = 500 // Performance: Limit to 500 trails for smooth rendering
 }: TrailsLayerProps) {
   // Filter and convert tracks to 3D line segments
   const trailLines = useMemo(() => {
-    return tracks.map((track) => {
+    // Performance: Decimate tracks if we have too many
+    // Take every Nth track to maintain even distribution
+    const decimationFactor = Math.max(1, Math.ceil(tracks.length / maxTrails));
+    const decimatedTracks = decimationFactor > 1
+      ? tracks.filter((_, i) => i % decimationFactor === 0)
+      : tracks;
+
+    return decimatedTracks.map((track) => {
       // Only show trails for balloons that exist at the selected hour
       const hasPointAtSelectedHour = track.points.some(
         (p) => p.tHoursAgo === selectedHour
@@ -64,9 +75,14 @@ export default function TrailsLayer({
         points,
       };
     }).filter((line): line is NonNullable<typeof line> => line !== null);
-  }, [tracks, selectedHour, maxHours]);
+  }, [tracks, selectedHour, maxHours, maxTrails]);
 
   if (trailLines.length === 0) return null;
+
+  // Performance: Log if trails were decimated (dev mode only)
+  if (process.env.NODE_ENV === 'development' && tracks.length > maxTrails) {
+    console.log(`TrailsLayer: Decimated ${tracks.length} tracks to ${trailLines.length} for performance`);
+  }
 
   return (
     <group>
@@ -74,7 +90,7 @@ export default function TrailsLayer({
         <Line
           key={line.id}
           points={line.points}
-          color="#00d4ff"
+          color="#39FF14"
           lineWidth={2.0}
           opacity={0.6}
           transparent

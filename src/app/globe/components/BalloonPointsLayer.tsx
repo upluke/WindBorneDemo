@@ -9,9 +9,10 @@ import type { BalloonPoint } from '@/lib/types';
 
 interface BalloonPointsLayerProps {
   points: BalloonPoint[];
+  onSelectBalloon?: (point: BalloonPoint | null) => void;
 }
 
-export default function BalloonPointsLayer({ points }: BalloonPointsLayerProps) {
+export default function BalloonPointsLayer({ points, onSelectBalloon }: BalloonPointsLayerProps) {
   const meshRef = useRef<InstancedMesh>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [hoveredPoint, setHoveredPoint] = useState<BalloonPoint | null>(null);
@@ -33,6 +34,18 @@ export default function BalloonPointsLayer({ points }: BalloonPointsLayerProps) 
     meshRef.current.instanceMatrix.needsUpdate = true;
     meshRef.current.computeBoundingSphere();
   }, [points]);
+
+  // Handle click selection
+  useEffect(() => {
+    const handleClick = () => {
+      if (hoveredIndex !== null && hoveredPoint && onSelectBalloon) {
+        onSelectBalloon(hoveredPoint);
+      }
+    };
+
+    gl.domElement.addEventListener('click', handleClick);
+    return () => gl.domElement.removeEventListener('click', handleClick);
+  }, [hoveredIndex, hoveredPoint, onSelectBalloon, gl]);
 
   // Handle hover detection every frame
   useFrame(() => {

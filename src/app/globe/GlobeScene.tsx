@@ -2,7 +2,7 @@
 
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stars } from '@react-three/drei';
-import { Suspense, useState, useMemo } from 'react';
+import { Suspense, useState, useMemo, useEffect } from 'react';
 import useSWR from 'swr';
 import EarthSphere from './components/EarthSphere';
 import BalloonPointsLayer from './components/BalloonPointsLayer';
@@ -15,6 +15,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function GlobeScene() {
   const [selectedHour, setSelectedHour] = useState(0);
+  const [selectedBalloon, setSelectedBalloon] = useState<BalloonPoint | null>(null);
   
   const { data, error, isLoading } = useSWR<BalloonsApiResponse>(
     '/api/balloons?hours=24',
@@ -35,6 +36,11 @@ export default function GlobeScene() {
     return matchTracks(data.snapshots);
   }, [data?.snapshots]);
 
+  // Clear selection when hour changes
+  useEffect(() => {
+    setSelectedBalloon(null);
+  }, [selectedHour]);
+
   return (
     <div className="flex h-full w-full">
       {/* Left Sidebar */}
@@ -46,6 +52,8 @@ export default function GlobeScene() {
           error={error}
           totalSnapshots={data?.snapshots.length || 0}
           balloonCount={currentBalloons.length}
+          selectedBalloon={selectedBalloon}
+          onClearSelection={() => setSelectedBalloon(null)}
         />
       </div>
 
@@ -66,7 +74,7 @@ export default function GlobeScene() {
             <Stars radius={100} depth={50} count={5000} factor={4} fade speed={1} />
             <EarthSphere />
             <TrailsLayer tracks={tracks} selectedHour={selectedHour} maxHours={24} />
-            <BalloonPointsLayer points={currentBalloons} />
+            <BalloonPointsLayer points={currentBalloons} onSelectBalloon={setSelectedBalloon} />
           </Suspense>
           
           {/* Controls */}
